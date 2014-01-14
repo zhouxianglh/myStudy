@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="default" name="SummerWeiXin">
+	<!-- 读取project.properties文件 -->
+	<property file="build.properties" />
+	<property name="app.title" value="${project.title}" />
+	<property name="app.version" value="${project.version}" />
+	<property name="app.tomcat" value="${project.tomcat.path}" />
+	<property name="app.build" value="${build.path}" />
+	<property name="app.src" value="${src.path}" />
+	<property name="app.dist" value="${dist.path}" />
+	<property name="app.encode" value="${project.encode}" />
+
+	<target name="default" depends="init,mk-war,clean-tempFile">
+		<echo>"${app.title} compile success"</echo>
+	</target>
+
+	<target name="clean-all">
+		<delete dir="${app.build}" />
+		<delete dir="${app.dist}" />
+		<!-- 清理Tomcat -->
+		<delete file="${app.tomcat}/webapps/${app.title}.war" />
+		<delete dir="${app.tomcat}/webapps/${app.title}" />
+	</target>
+
+	<target name="clean-tempFile">
+		<delete dir="${app.build}" />
+		<delete dir="${app.dist}" />
+		<delete dir="${app.tomcat}/webapps/${app.title}" />
+	</target>
+
+	<target name="init" depends="clean-all">
+		<mkdir dir="${app.build}" />
+		<mkdir dir="${app.dist}" />
+	</target>
+
+	<target name="copy-file-to-WebRoot">
+		<copy todir="${app.build}">
+			<fileset dir="WebRoot" />
+		</copy>
+	</target>
+
+	<target name="run-compile" depends="copy-file-to-WebRoot">
+		<!-- 资源文件的复制 -->
+		<copy todir="${app.build}/WEB-INF/classes">
+			<fileset dir="${app.src}">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+		<javac destdir="${app.build}/WEB-INF/classes" encoding="${app.encode}" debug="on" includeantruntime="true">
+			<classpath refid="sys-path" />
+			<src path="${app.src}" />
+		</javac>
+	</target>
+
+	<target name="mk-war" depends="run-compile">
+		<war warfile="${app.dist}/${app.title}.war" needxmlfile='false'>
+			<fileset dir="${app.build}" />
+		</war>
+		<!-- 布署到Tomcat下 -->
+		<copyfile dest="${app.tomcat}/webapps/${app.title}.war" src="${app.dist}/${app.title}.war" />
+	</target>
+</project>

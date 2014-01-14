@@ -1,0 +1,17 @@
+数据流向说明:
+StartServlet 接收请求
+validateInterceptor 对收到的请求进行验证
+beanInterceptors 消息对象的读取,及响应(微信服务器对于未响应的信息会重发三次,需要过滤掉)
+paramsFormatInterceptor 参数格式化(全角转半角,中文标点转英文标点)
+customerServiceInterceptor 人工客服功能拦截器(需要有客服接口支持)
+summerControl 请求分发
+
+具体情况参见 applicationContext.xml
+
+
+CommonWeixinUtils 微信高级口调用(获取用户资料,使用客服接口发送消息....),需要定时任务获取token
+
+关于人工客服,因为参与开发人力有限,考滤过使用 Gtalk 和 微信网页版 做为客服客户端,根据公司实际情况使用 微信网页版 做为人工客服工具.(因此实现中仅支持一对一模式,没有支持多对一模式)
+
+
+这些代码是友情帮助同事写的,大部分时间是自己业余时间写的,所以没有写太细,很多细节需要强化.
