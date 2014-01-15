@@ -20,11 +20,6 @@ import com.henglu.summer.utils.CommonWeixinUtils;
 public class WeiXinServiceCenter implements IServiceCenter {
     private static Logger logger = Logger.getLogger(WeiXinServiceCenter.class);
     private static WeiXinServiceCenter serviceCenter = new WeiXinServiceCenter();
-
-    public static WeiXinServiceCenter getInstance() {
-        return serviceCenter;
-    }
-
     /**
      * 清理等待队列时间
      */
@@ -37,22 +32,18 @@ public class WeiXinServiceCenter implements IServiceCenter {
      * 清理客户时间
      */
     private long clearCustomer;
-
     /**
      * 客户列表
      */
     private Map<String, CustomerBO> customerMap = new Hashtable<String, CustomerBO>();
-
     /**
      * 客服列表
      */
     private Map<String, ServerBO> serverMap = new Hashtable<String, ServerBO>();
-
     /**
      * 客服列表
      */
     private Map<String, ServerBO> serverNameMap = new Hashtable<String, ServerBO>();
-
     /**
      * 客户-客服关联表
      */
@@ -61,7 +52,6 @@ public class WeiXinServiceCenter implements IServiceCenter {
      * 客服-客户关联表
      */
     private Map<ServerBO, CustomerBO> linkServerMap = new Hashtable<ServerBO, CustomerBO>();
-
     /**
      * 客户-客服关联表(等待中)
      */
@@ -70,8 +60,11 @@ public class WeiXinServiceCenter implements IServiceCenter {
      * 客服-客户关联表(等待中)
      */
     private Map<CustomerBO, ServerBO> waitCustomerMap = new Hashtable<CustomerBO, ServerBO>();
-
     private CommonWeixinUtils weixinUtils;
+
+    public static WeiXinServiceCenter getInstance() {
+        return serviceCenter;
+    }
 
     private WeiXinServiceCenter() {
     }
@@ -79,6 +72,7 @@ public class WeiXinServiceCenter implements IServiceCenter {
     /**
      * 添加客户
      */
+    @Override
     public synchronized void addCustomer(String customerID) {
         CustomerBO customerBO = new CustomerBO();
         customerBO.setCustomerID(customerID);
@@ -105,7 +99,8 @@ public class WeiXinServiceCenter implements IServiceCenter {
             waitCustomerMap.put(customerBO, freeBO);
             weixinUtils.sendTextMessageByServer(customerBO.getCustomerID(), "正在转接人工服务...请稍候");
             freeBO.setStatus(ServerBO.TYPE_SERVER_WATI);
-            weixinUtils.sendTextMessageByServer(freeBO.getServerID(), customerBO.getNickName() + " 请求接入，是否接入？#3接受，#4 拒接");
+            weixinUtils.sendTextMessageByServer(freeBO.getServerID(), customerBO.getNickName()
+                    + " 请求接入，是否接入？#3接受，#4 拒接");
         }
     }
 
@@ -126,7 +121,8 @@ public class WeiXinServiceCenter implements IServiceCenter {
         } else {
             serverMap.put(serverBO.getNickName(), serverBO);
             serverMap.put(serverID, serverBO);
-            weixinUtils.sendTextMessageByServer(serverID, "成功能客服身份登录微信客服中心,操作:#1 在线,#2 离线,#3 接受,#4 拒接,#5 挂断,#6 客服昵称 转接,#7 退出");
+            weixinUtils.sendTextMessageByServer(serverID,
+                    "成功能客服身份登录微信客服中心,操作:#1 在线,#2 离线,#3 接受,#4 拒接,#5 挂断,#6 客服昵称 转接,#7 退出");
         }
     }
 
@@ -140,7 +136,7 @@ public class WeiXinServiceCenter implements IServiceCenter {
         for (Map.Entry<ServerBO, CustomerBO> entry : linkServerMap.entrySet()) {
             CustomerBO customerBO = entry.getValue();
             ServerBO serverBO = waitCustomerMap.get(customerBO);
-            if(null == serverBO){
+            if (null == serverBO) {
                 continue;
             }
             waitMap.remove(serverBO);
@@ -213,14 +209,17 @@ public class WeiXinServiceCenter implements IServiceCenter {
         }
     }
 
+    @Override
     public synchronized Collection<CustomerBO> getCurrnetCustomer() {
         return customerMap.values();
     }
 
+    @Override
     public synchronized Collection<ServerBO> getCurrnetServer() {
         return serverMap.values();
     }
 
+    @Override
     public synchronized boolean isSendToServer(String customerID) {
         if (customerMap.containsKey(customerID)) {
             return true;
@@ -229,6 +228,7 @@ public class WeiXinServiceCenter implements IServiceCenter {
         }
     }
 
+    @Override
     public synchronized void reciveMessage(WeiXinMessageBO messageBO) {
         String content = messageBO.getContent();
         logger.info("reciveMessage " + content);
@@ -258,8 +258,10 @@ public class WeiXinServiceCenter implements IServiceCenter {
                 serverBO.setStatus(ServerBO.TYPE_BUSY);// 设置客服忙碌中
                 waitMap.remove(serverBO);
                 waitCustomerMap.remove(customerBO);
-                weixinUtils.sendTextMessageByServer(serverBO.getServerID(), "与客户: " + customerBO.getNickName() + " 连接成功.");
-                weixinUtils.sendTextMessageByServer(customerBO.getCustomerID(),"与客服 "+serverBO.getNickName()+" 连接成功");
+                weixinUtils.sendTextMessageByServer(serverBO.getServerID(), "与客户: " + customerBO.getNickName()
+                        + " 连接成功.");
+                weixinUtils.sendTextMessageByServer(customerBO.getCustomerID(), "与客服 " + serverBO.getNickName()
+                        + " 连接成功");
                 return;
             } else if ("#4".equals(content)) {
                 if (ServerBO.TYPE_SERVER_WATI == serverBO.getStatus()) {
@@ -308,7 +310,8 @@ public class WeiXinServiceCenter implements IServiceCenter {
                     if (ServerBO.TYPE_ONLINE == newServerBO.getStatus()) {
                         CustomerBO customerBO = linkServerMap.get(serverBO);
                         newServerBO.setStatus(ServerBO.TYPE_SERVER_WATI);
-                        weixinUtils.sendTextMessageByServer(newServerBO.getServerID(), "是否响应当" + serverBO.getNickName() + "转发来自" + customerBO.getNickName() + "的请求?回复: #1 接受,#2 拒接");
+                        weixinUtils.sendTextMessageByServer(newServerBO.getServerID(), "是否响应当" + serverBO.getNickName()
+                                + "转发来自" + customerBO.getNickName() + "的请求?回复: #1 接受,#2 拒接");
                     } else {
                         weixinUtils.sendTextMessageByServer(serverBO.getServerID(), "请求转接失败,该客服暂时无法接受新任务");
                     }
@@ -339,8 +342,9 @@ public class WeiXinServiceCenter implements IServiceCenter {
         }
     }
 
+    @Override
     public synchronized void removeCustomer(String openID) {
-        if(serverMap.containsKey(openID)){
+        if (serverMap.containsKey(openID)) {
             weixinUtils.sendTextMessageByServer(openID, "不要挑衅我！！！");
             return;
         }
@@ -363,6 +367,7 @@ public class WeiXinServiceCenter implements IServiceCenter {
         }
     }
 
+    @Override
     public synchronized void removeServer(String openID) {
         ServerBO serverBO = serverMap.get(openID);
         if (null != serverBO) {
