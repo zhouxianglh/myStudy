@@ -180,7 +180,7 @@ public class WeiXinServiceCenter implements IServiceCenter {
                 weixinUtils.sendTextMessageByServer(customerBO.getCustomerID(), "长时间未操作与服务器断开");
                 ServerBO serverBO = waitCustomerMap.get(customerBO);
                 if (null != serverBO) {
-                    waitCustomerMap.remove(serverBO);
+                    waitCustomerMap.remove(customerBO);
                     waitMap.remove(serverBO);
                     serverBO.setStatus(ServerBO.TYPE_ONLINE);
                     weixinUtils.sendTextMessageByServer(serverBO.getServerID(), "客户取消等待,已断开");
@@ -349,7 +349,7 @@ public class WeiXinServiceCenter implements IServiceCenter {
             customerMap.remove(openID);
             ServerBO serverBO = waitCustomerMap.get(customerBO);
             if (null != serverBO) {
-                waitCustomerMap.remove(serverBO);
+                waitCustomerMap.remove(customerBO);
                 waitMap.remove(serverBO);
             }
             serverBO = linkCustomerMap.get(customerBO);
