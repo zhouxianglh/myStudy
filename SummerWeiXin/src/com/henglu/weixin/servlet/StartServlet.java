@@ -14,10 +14,14 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import com.henglu.summer.control.IControl;
 
+/**
+ * Servlet
+ * @author zhouxianglh@gmail.com
+ * @version 1.0  2014-1-20 下午10:40:14
+ */
 public class StartServlet extends HttpServlet {
     private static final long serialVersionUID = -8128980502013463031L;
     private static Logger logger = Logger.getLogger(StartServlet.class);
-
     private WebApplicationContext applicationContext;
 
     public StartServlet() {
@@ -30,7 +34,11 @@ public class StartServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
         IControl control = (IControl) applicationContext.getBean("validateInterceptor");
-        control.execute(request, response);
+        try {
+            control.execute(request, response);
+        } catch (Exception e) {
+            logger.error("", e);
+        }
         logger.info("执行完毕......");
     }
 
@@ -45,5 +53,4 @@ public class StartServlet extends HttpServlet {
         ServletContext servletContext = this.getServletContext();
         applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
     }
-
 }

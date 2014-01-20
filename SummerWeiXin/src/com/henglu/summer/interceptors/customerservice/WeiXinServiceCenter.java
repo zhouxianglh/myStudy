@@ -12,10 +12,11 @@ import com.henglu.summer.bo.CustomerBO;
 import com.henglu.summer.bo.ServerBO;
 import com.henglu.summer.bo.UserBO;
 import com.henglu.summer.bo.WeiXinMessageBO;
+import com.henglu.summer.interceptors.interfaces.IServiceCenter;
 import com.henglu.summer.utils.CommonWeixinUtils;
 
 /**
- * 使用微信作为客服客户端(1对1 模式人工客服中心)
+ * 使用微信作为客服客户端(1对1 模式人工客服中心,我自己觉得Spark做客户端更好,比网页版微信好多了)
  */
 public class WeiXinServiceCenter implements IServiceCenter {
     private static Logger logger = Logger.getLogger(WeiXinServiceCenter.class);
@@ -165,6 +166,7 @@ public class WeiXinServiceCenter implements IServiceCenter {
     /**
      * 每2分钟
      */
+    @Override
     public synchronized void freeCustomer() {
         logger.info("清理长时间未响应客户......");
         long nowTime = new Date().getTime();
@@ -193,6 +195,22 @@ public class WeiXinServiceCenter implements IServiceCenter {
     }
 
     /**
+     * 每2分钟
+     */
+    @Override
+    public synchronized void freeCustomerSendNote() {
+        long nowTime = new Date().getTime();
+        Iterator<CustomerBO> iterator = customerMap.values().iterator();
+        while (iterator.hasNext()) {
+            CustomerBO customerBO = iterator.next();
+            if (nowTime - customerBO.getLastMessageTime().getTime() > clearCustomer) {
+                iterator.remove();
+                weixinUtils.sendTextMessageByServer(customerBO.getCustomerID(), "长时间未操作即将与服务器断开....回复任何内容保持连接");
+            }
+        }
+    }
+
+    /**
      * 每3个小时清一下客服
      */
     public synchronized void freeServer() {
@@ -215,11 +233,6 @@ public class WeiXinServiceCenter implements IServiceCenter {
     }
 
     @Override
-    public synchronized Collection<ServerBO> getCurrnetServer() {
-        return serverMap.values();
-    }
-
-    @Override
     public synchronized boolean isSendToServer(String customerID) {
         if (customerMap.containsKey(customerID)) {
             return true;
@@ -236,9 +249,11 @@ public class WeiXinServiceCenter implements IServiceCenter {
         if (null != serverBO) {// 客服操作
             serverBO.setLastMessageTime(new Date());// 更新最后操作时间
             if ("#1".equals(content) && ServerBO.TYPE_OFFLINE == serverBO.getStatus()) {
+                serverBO.setStatus(ServerBO.TYPE_ONLINE);
                 weixinUtils.sendTextMessageByServer(messageBO.getFromUserName(), "当前状态在线");
                 return;
             } else if ("#2".equals(content) && ServerBO.TYPE_ONLINE == serverBO.getStatus()) {
+                serverBO.setStatus(ServerBO.TYPE_OFFLINE);
                 weixinUtils.sendTextMessageByServer(messageBO.getFromUserName(), "当前状态离线");
                 return;
             } else if ("#3".equals(content)) {
@@ -340,6 +355,7 @@ public class WeiXinServiceCenter implements IServiceCenter {
                 weixinUtils.sendTextMessageByServer(customerBO.getCustomerID(), "正在为您连线客服人员,请稍候....");
             }
         }
+        return;
     }
 
     @Override
@@ -367,7 +383,6 @@ public class WeiXinServiceCenter implements IServiceCenter {
         }
     }
 
-    @Override
     public synchronized void removeServer(String openID) {
         ServerBO serverBO = serverMap.get(openID);
         if (null != serverBO) {

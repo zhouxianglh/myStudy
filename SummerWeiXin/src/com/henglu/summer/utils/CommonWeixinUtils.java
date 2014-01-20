@@ -19,87 +19,14 @@ import com.henglu.summer.bo.ServerMessageBO;
 import com.henglu.summer.bo.UserBO;
 import com.henglu.summer.bo.WeiXinMessageBO;
 
+/**
+ * 微信高给接口工具类,appID,secret 注入后调用 createtokenID 方法获取token后使用
+ * @author zhouxianglh@gmail.com
+ * @version 1.0  2014-1-20 下午10:35:11
+ */
 public class CommonWeixinUtils {
     private static final Logger logger = Logger.getLogger(CommonWeixinUtils.class);
     private static CommonWeixinUtils weixinUtils = new CommonWeixinUtils();
-
-    private CommonWeixinUtils() {
-    }
-
-    public static CommonWeixinUtils getInstance() {
-        return weixinUtils;
-    }
-
-    /**
-     * access_token有效期是7200秒,由定时任务获取
-     */
-    public void createtokenID() {
-        logger.info("获取 access_token .....");
-        try {
-            String str = CommonUtils.sendGet(CommonUtils.joinString("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=", appID, "&secret=", secret));
-            logger.info("createtokenID "+ str);
-            Map<String, String> map = CommonUtils.toMap(str);
-            token = map.get("access_token");
-        } catch (IOException e) {
-            logger.error("获取access_token出错", e);
-        }
-    }
-
-    /**
-     * 使用客服接口发送文本消息
-     */
-    public void sendTextMessageByServer(String openID, String context) {
-        context = CommonUtils.StringConver(context, "UTF-8", "ISO-8859-1");
-        ServerMessageBO messageBO = new ServerMessageBO();
-        messageBO.setMsgtype(ServerMessageBO.MSG_TYPE_TEXT);
-        messageBO.setTouser(openID);
-        ServerMessageBO.TextBO text = messageBO.new TextBO();
-        text.setContent(context);
-        messageBO.setText(text);
-        sendMessageByServer(messageBO);
-    }
-
-    /**
-     * 发送客服消息
-     */
-    public void sendMessageByServer(ServerMessageBO messageBO) {
-        try {
-            String json = CommonUtils.toJson(messageBO);
-            logger.info("sendMessageByServer "+json);
-            CommonUtils.sendPost("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=" + this.token, json);
-        } catch (ClientProtocolException e) {
-            logger.error("发送客服消息失败", e);
-        } catch (IOException e) {
-            logger.error("发送客服消息失败", e);
-        }
-    }
-
-    /**
-     * 获取用户信息
-     */
-    public UserBO getUserInfo(String userID) {
-        try {
-            String str = CommonUtils.sendGet(CommonUtils.joinString("https://api.weixin.qq.com/cgi-bin/user/info?access_token=", token, "&openid=", userID, "&lang=zh_CN"));
-            str = CommonUtils.StringConver(str, "ISO-8859-1", "utf-8");
-            logger.info("getUserInfo "+str);
-            Map<String, String> map = CommonUtils.toMap(str);
-            UserBO userBO = new UserBO();
-            userBO.setSex(Integer.valueOf(map.get("sex")));
-            userBO.setSubscribe(Integer.valueOf(map.get("subscribe")));
-            userBO.setNickname(map.get("nickname"));
-            userBO.setOpenid(userID);
-            userBO.setHeadimgurl(map.get("headimgurl"));
-            userBO.setCity(map.get("city"));
-            userBO.setCountry(map.get("country"));
-            userBO.setLanguage(map.get("language"));
-            userBO.setProvince(map.get("province"));
-            userBO.setSubscribe_time(Long.valueOf(map.get("subscribe_time")));
-            return userBO;
-        } catch (IOException e) {
-            logger.error("获取UserInfo 出错", e);
-        }
-        return null;
-    }
 
     /**
      * 创建消息对象(文本)
@@ -114,10 +41,15 @@ public class CommonWeixinUtils {
         return messageBO;
     }
 
+    public static CommonWeixinUtils getInstance() {
+        return weixinUtils;
+    }
+
     /**
      * 获取请求中的xml字符串
      */
-    public static String getRequestXML(final HttpServletRequest request) throws IOException, UnsupportedEncodingException {
+    public static String getRequestXML(final HttpServletRequest request) throws IOException,
+            UnsupportedEncodingException {
         BufferedInputStream inputStream = null;
         inputStream = new BufferedInputStream(request.getInputStream());
         StringBuffer sb = new StringBuffer();
@@ -166,15 +98,12 @@ public class CommonWeixinUtils {
         sb.append("<ToUserName><![CDATA[");
         sb.append(messageBO.getToUserName());
         sb.append("]]></ToUserName>");
-
         sb.append("<FromUserName><![CDATA[");
         sb.append(messageBO.getFromUserName());
         sb.append("]]></FromUserName>");
-
         sb.append("<CreateTime>");
         sb.append(messageBO.getCreateTime());
         sb.append("</CreateTime>");
-
         sb.append("<MsgType><![CDATA[");
         sb.append(messageBO.getMsgType());
         sb.append("]]></MsgType>");
@@ -188,10 +117,28 @@ public class CommonWeixinUtils {
     }
 
     private String token;
-
     private String appID;
-
     private String secret;
+
+    private CommonWeixinUtils() {
+    }
+
+    /**
+     * access_token有效期是7200秒,由定时任务获取
+     */
+    public void createtokenID() {
+        logger.info("获取 access_token .....");
+        try {
+            String str = CommonUtils.sendGet(CommonUtils.joinString(
+                    "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=", appID, "&secret=",
+                    secret));
+            logger.info("createtokenID " + str);
+            Map<String, String> map = CommonUtils.jsonToMap(str);
+            token = map.get("access_token");
+        } catch (IOException e) {
+            logger.error("获取access_token出错", e);
+        }
+    }
 
     public String getAppID() {
         return appID;
@@ -203,6 +150,65 @@ public class CommonWeixinUtils {
 
     public String getToken() {
         return token;
+    }
+
+    /**
+     * 获取用户信息
+     */
+    public UserBO getUserInfo(String userID) {
+        try {
+            String str = CommonUtils.sendGet(CommonUtils.joinString(
+                    "https://api.weixin.qq.com/cgi-bin/user/info?access_token=", token, "&openid=", userID,
+                    "&lang=zh_CN"));
+            str = CommonUtils.StringConver(str, "ISO-8859-1", "utf-8");
+            logger.info("getUserInfo " + str);
+            Map<String, String> map = CommonUtils.jsonToMap(str);
+            UserBO userBO = new UserBO();
+            userBO.setSex(Integer.valueOf(map.get("sex")));
+            userBO.setSubscribe(Integer.valueOf(map.get("subscribe")));
+            userBO.setNickname(map.get("nickname"));
+            userBO.setOpenid(userID);
+            userBO.setHeadimgurl(map.get("headimgurl"));
+            userBO.setCity(map.get("city"));
+            userBO.setCountry(map.get("country"));
+            userBO.setLanguage(map.get("language"));
+            userBO.setProvince(map.get("province"));
+            userBO.setSubscribe_time(Long.valueOf(map.get("subscribe_time")));
+            return userBO;
+        } catch (IOException e) {
+            logger.error("获取UserInfo 出错", e);
+        }
+        return null;
+    }
+
+    /**
+     * 发送客服消息
+     */
+    public void sendMessageByServer(ServerMessageBO messageBO) {
+        try {
+            String json = CommonUtils.toJson(messageBO);
+            logger.info("sendMessageByServer " + json);
+            CommonUtils.sendPost("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=" + this.token,
+                    json);
+        } catch (ClientProtocolException e) {
+            logger.error("发送客服消息失败", e);
+        } catch (IOException e) {
+            logger.error("发送客服消息失败", e);
+        }
+    }
+
+    /**
+     * 使用客服接口发送文本消息
+     */
+    public void sendTextMessageByServer(String openID, String context) {
+        context = CommonUtils.StringConver(context, "UTF-8", "ISO-8859-1");
+        ServerMessageBO messageBO = new ServerMessageBO();
+        messageBO.setMsgtype(ServerMessageBO.MSG_TYPE_TEXT);
+        messageBO.setTouser(openID);
+        ServerMessageBO.TextBO text = messageBO.new TextBO();
+        text.setContent(context);
+        messageBO.setText(text);
+        sendMessageByServer(messageBO);
     }
 
     public void setAppID(String appID) {

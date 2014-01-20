@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import com.henglu.summer.bo.WeiXinMessageBO;
-import com.henglu.summer.interceptors.customerservice.WeiXinServiceCenter;
+import com.henglu.summer.interceptors.interfaces.IServiceCenter;
 import com.henglu.summer.utils.CommonWeixinUtils;
 
 /**
@@ -14,27 +14,28 @@ import com.henglu.summer.utils.CommonWeixinUtils;
  */
 public class SummerControl extends BaseControl {
     private static Logger logger = Logger.getLogger(SummerControl.class);
+    private IServiceCenter serviceCenter;
 
-    public void execute(HttpServletRequest request, HttpServletResponse response) {
-        WeiXinServiceCenter weiXinServiceCenter = WeiXinServiceCenter.getInstance();
+    @Override
+    public void execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
         WeiXinMessageBO messageBO = (WeiXinMessageBO) context.get(IControl.REQUEST_MESSAGE_BEAN);
-        if (WeiXinMessageBO.MSGTYPE_TEXT.equals(messageBO.getMsgType())) {
+        if (WeiXinMessageBO.MSGTYPE_TEXT.equals(messageBO.getMsgType())) {// 文字消息一律回复 提莫队长,正在待命
             logger.info(messageBO.getContent());
-            if ("求妹子".equals(messageBO.getContent())) {
-                weiXinServiceCenter.addServer(messageBO.getFromUserName());
-                logger.info("设置为客服人员....");
+            context.put(IControl.RESPONSE_MESSAGE_BEAN, CommonWeixinUtils.createMessageBO(messageBO.getFromUserName(),
+                    messageBO.getToUserName(), "提莫队长,正在待命!!"));
+            logger.info("响应了请求....");
+        } else {// 事件,第一次触会会接入人工客服功能,再次触发则退出
+            if (serviceCenter.isSendToServer(messageBO.getFromUserName())) {
+                serviceCenter.removeCustomer(messageBO.getFromUserName());
             } else {
-                context.put(IControl.RESPONSE_MESSAGE_BEAN, CommonWeixinUtils.createMessageBO(messageBO.getFromUserName(), messageBO.getToUserName(), "提莫队长,正在待命!!"));
-                logger.info("响应了请求....");
-            }
-        } else {
-            if (weiXinServiceCenter.isSendToServer(messageBO.getFromUserName())) {
-                weiXinServiceCenter.removeCustomer(messageBO.getFromUserName());
-            } else {
-                weiXinServiceCenter.addCustomer(messageBO.getFromUserName());
+                serviceCenter.addCustomer(messageBO.getFromUserName());
             }
             context.put(IControl.RESPONSE_NULL, "");
             logger.info("响应了请求....");
         }
+    }
+
+    public void setServiceCenter(IServiceCenter serviceCenter) {
+        this.serviceCenter = serviceCenter;
     }
 }

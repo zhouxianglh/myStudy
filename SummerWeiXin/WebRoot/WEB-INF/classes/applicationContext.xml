@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
-	xmlns:dwr="http://www.directwebremoting.org/schema/spring-dwr" xmlns:task="http://www.springframework.org/schema/task"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans   
+        xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+        xmlns:dwr="http://www.directwebremoting.org/schema/spring-dwr" xmlns:task="http://www.springframework.org/schema/task"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans   
     http://www.springframework.org/schema/beans/spring-beans-3.2.xsd  
     http://www.springframework.org/schema/context   
     http://www.springframework.org/schema/context/spring-context-3.2.xsd  
@@ -11,46 +11,86 @@
     http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
 	http://www.springframework.org/schema/task
 	http://www.springframework.org/schema/task/spring-task-3.2.xsd">
-	<!-- summerControl用于分发清求 -->
-	<bean id="summerControl" name="SummerControl" class="com.henglu.summer.control.SummerControl" scope="prototype"></bean>
-	<!-- 拦截器 -->
-	<!-- 客服功能拦截器 -->
-	<bean id="customerServiceInterceptor" name="CustomerServiceInterceptor" class="com.henglu.summer.interceptors.CustomerServiceInterceptor"
-		scope="prototype">
-		<property name="control" ref="summerControl" />
-		<property name="serviceCenter" ref="weiXinServiceCenter"></property>
-	</bean>
-	<!-- 参数据式化 -->
-	<bean id="paramsFormatInterceptor" name="ParamsFormatInterceptor" class="com.henglu.summer.interceptors.ParamsFormatInterceptor" scope="prototype">
-		<property name="control" ref="customerServiceInterceptor"></property>
-	</bean>
-	<!-- 参数封装及响应 -->
-	<bean id="beanInterceptors" name="BeanInterceptors" class="com.henglu.summer.interceptors.BeanInterceptors" scope="prototype">
-		<property name="control" ref="paramsFormatInterceptor"></property>
-	</bean>
-	<!-- 验证 -->
-	<bean id="validateInterceptor" name="ValidateInterceptor" class="com.henglu.summer.interceptors.ValidateInterceptor" scope="prototype">
-		<property name="control" ref="beanInterceptors" />
-		<property name="token" value="zhouxianglh" />
-	</bean>
-	<!-- 微信人工服务中心(微信客户端,1对1模式) -->
-	<bean id="weiXinServiceCenter" name="weiXinServiceCenter" class="com.henglu.summer.interceptors.customerservice.WeiXinServiceCenter" scope="singleton"
-		factory-method="getInstance">
-		<property name="clearWait" value="20000" />
-		<property name="clearServer" value="10800000" />
-		<property name="clearCustomer" value="120000" />
-		<property name="weixinUtils" ref="weixinUtils" />
-	</bean>
-	<!-- 使用高级接口 -->
-	<bean id="weixinUtils" name="weixinUtils" class="com.henglu.summer.utils.CommonWeixinUtils" scope="singleton" factory-method="getInstance" init-method="createtokenID">
-		<property name="appID" value="wxa2b765f72a034414" />
-		<property name="secret" value="b4f4d6cd59cfb1809e53efba4dc94745" />
-	</bean>
-	<!-- 定时任务 -->
-	<task:scheduled-tasks>
-		<task:scheduled ref="weixinUtils" method="createtokenID" cron="0 0 0/1 * * *" />
-		<task:scheduled ref="weiXinServiceCenter" method="changeWait" cron="0/20 * * * * *" />
-		<task:scheduled ref="weiXinServiceCenter" method="freeCustomer" cron="0 0/2 * * * *" />
-		<task:scheduled ref="weiXinServiceCenter" method="freeServer" cron="0 0/5 * * * *" />
-	</task:scheduled-tasks>
+        <!-- summerControl用于分发清求 -->
+        <bean id="summerControl" class="com.henglu.summer.control.SummerControl" scope="prototype">
+                <property name="serviceCenter" ref="sparkServiceCenter" />
+        </bean>
+        <!-- 拦截器 -->
+        <!-- 客服功能拦截器 -->
+        <bean id="customerServiceInterceptor" class="com.henglu.summer.interceptors.CustomerServiceInterceptor"
+                scope="prototype">
+                <property name="control" ref="summerControl" />
+                <property name="serviceCenter" ref="sparkServiceCenter" />
+        </bean>
+        <!-- 参数据式化 -->
+        <bean id="paramsFormatInterceptor" class="com.henglu.summer.interceptors.ParamsFormatInterceptor" scope="prototype">
+                <property name="control" ref="customerServiceInterceptor" />
+        </bean>
+        <!-- 参数封装及响应 -->
+        <bean id="beanInterceptors" class="com.henglu.summer.interceptors.BeanInterceptors" scope="prototype">
+                <property name="control" ref="paramsFormatInterceptor" />
+        </bean>
+        <!-- 验证 -->
+        <bean id="validateInterceptor" class="com.henglu.summer.interceptors.ValidateInterceptor" scope="prototype">
+                <property name="control" ref="beanInterceptors" />
+                <property name="token" value="henglu" />
+        </bean>
+        <!-- 微信人工服务中心(微信客户端,1对1模式) -->
+        <bean id="weiXinServiceCenter" class="com.henglu.summer.interceptors.customerservice.WeiXinServiceCenter"
+                scope="singleton" factory-method="getInstance">
+                <property name="clearWait" value="20000" />
+                <property name="clearServer" value="10800000" />
+                <property name="clearCustomer" value="120000" />
+                <property name="weixinUtils" ref="weixinUtils" />
+        </bean>
+        <!-- 微信人工服务中心(Spark 客户端,1对多模式) -->
+        <bean id="sparkServiceCenter" class="com.henglu.summer.interceptors.customerservice.SparkServiceCenter" scope="singleton"
+                factory-method="getInstance">
+                <property name="clearCustomer" value="120000" />
+                <property name="weixinUtils" ref="weixinUtils" />
+                <property name="sparkServer" ref="sparkServer" />
+        </bean>
+        <bean id="sparkServer" class="com.henglu.summer.spark.SparkServer" scope="singleton" factory-method="getInstance"
+                init-method="init">
+                <property name="host" value="192.168.3.84" />
+                <property name="handle" ref="sparkServiceCenter" />
+                <property name="jdbcTemplate" ref="jdbcTemplate" />
+        </bean>
+        <!-- 使用高级接口 -->
+        <bean id="weixinUtils" class="com.henglu.summer.utils.CommonWeixinUtils" scope="singleton" factory-method="getInstance"
+                init-method="createtokenID">
+                <property name="appID" value="wxa2b765f72a034414" />
+                <property name="secret" value="b4f4d6cd59cfb1809e53efba4dc94745" />
+        </bean>
+        <!-- 数据源 -->
+        <bean id="sparkDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+                <!-- 指定连接数据库的驱动 -->
+                <property name="driverClass" value="com.mysql.jdbc.Driver" />
+                <!-- 指定连接数据库的URL -->
+                <property name="jdbcUrl" value="jdbc:mysql://192.168.3.84:3306/gtalk" />
+                <!-- 指定连接数据库的用户名 -->
+                <property name="user" value="root" />
+                <!-- 指定连接数据库的密码 -->
+                <property name="password" value="123456" />
+                <!-- 连接池中保留的最小连接数 -->
+                <property name="minPoolSize" value="3" />
+                <!-- 连接池中保留的最大连接数 -->
+                <property name="maxPoolSize" value="15" />
+        </bean>
+        <!-- 数据库操作工具类 -->
+        <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+                <property name="dataSource" ref="sparkDataSource" />
+        </bean>
+        <!-- 定时任务 -->
+        <task:scheduled-tasks>
+                <!-- 高级接口的acctess_token 有效时间7200秒,定时更新 -->
+                <task:scheduled ref="weixinUtils" method="createtokenID" cron="0 0 0/1 * * *" />
+                <!-- 提醒长时间没操作的用户 -->
+                <task:scheduled ref="sparkServiceCenter" method="freeCustomerSendNote" cron="0 0/2 * * * *" />
+                <!-- 清理长时间没操作的用户 -->
+                <task:scheduled ref="sparkServiceCenter" method="freeCustomer" cron="30 0/2 * * * *" />
+                <!-- <task:scheduled ref="weiXinServiceCenter" method="changeWait" cron="0/20 * * * * *" /> -->
+                <!-- <task:scheduled ref="weiXinServiceCenter" method="freeServer" cron="0 0/5 * * * *" /> -->
+                <!-- <task:scheduled ref="weixinUtils" method="createtokenID" cron="0 0 0/1 * * *" /> -->
+        </task:scheduled-tasks>
 </beans>

@@ -15,3 +15,8 @@ CommonWeixinUtils 微信高级口调用(获取用户资料,使用客服接口发
 
 
 这些代码是友情帮助同事写的,大部分时间是自己业余时间写的,所以没有写太细,很多细节需要强化.
+
+
+2014.01.20 更新内容
+人工客服模块添加Spark 支持, Spark 是一个基于开源XMPP协议的聊天工具.支持1对多操作
+Spark的相关操作参考: http://www.igniterealtime.org/index.jsp

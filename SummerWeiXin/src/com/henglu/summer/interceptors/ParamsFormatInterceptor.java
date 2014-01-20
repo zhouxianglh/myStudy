@@ -7,31 +7,33 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.henglu.summer.bo.WeiXinMessageBO;
 import com.henglu.summer.control.IControl;
+import com.henglu.summer.interceptors.interfaces.Interceptor;
 import com.henglu.summer.utils.CommonUtils;
 
 /**
- * 对请求参数进行格式化的拦截器
+ * 对请求参数进行格式化的拦截器(全角转半角,中文符号转英文符号)
  */
 public class ParamsFormatInterceptor implements Interceptor {
+    private IControl control;
+    private Map<String, Object> context;
 
-	private IControl control;
+    @Override
+    public void execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        WeiXinMessageBO messageBO = (WeiXinMessageBO) context.get(IControl.REQUEST_MESSAGE_BEAN);
+        if (null != messageBO.getContent()) {// 字符串格式化,方便后面识别
+            messageBO.setContent(CommonUtils.StringSymbol(CommonUtils.StringConver(messageBO.getContent())).trim());
+        }
+        control.execute(request, response);
+    }
 
-	public void execute(HttpServletRequest request, HttpServletResponse response) {
-		WeiXinMessageBO messageBO = (WeiXinMessageBO) context.get(IControl.REQUEST_MESSAGE_BEAN);
-		if (null != messageBO.getContent()) {// 字符串格式化,方便后面识别
-			messageBO.setContent(CommonUtils.StringSymbol(CommonUtils.StringConver(messageBO.getContent())).trim());
-		}
-		control.execute(request, response);
-	}
+    @Override
+    public Map<String, Object> getContext() {
+        return context;
+    }
 
-	public void setControl(IControl control) {
-		this.control = control;
-		context = control.getContext();
-	}
-
-	private Map<String, Object> context;
-
-	public Map<String, Object> getContext() {
-		return context;
-	}
+    @Override
+    public void setControl(IControl control) {
+        this.control = control;
+        context = control.getContext();
+    }
 }

@@ -5,31 +5,36 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import net.sf.json.JSONObject;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 
+/**
+ * 工具类
+ * @author zhouxianglh@gmail.com
+ * @version 1.0  2014-1-20 下午10:34:58
+ */
 public class CommonUtils {
     private static Logger logger = Logger.getLogger(CommonUtils.class);
     private final static String[] enSymbol = { "-", "<", ">", "\"", "\"", "\"", "\"", ",", ",", ".", "?" };
     private final static String[] cnSymbol = { "—", "〈", "〉", "“", "”", "‘", "’", "、", "，", "。", "？" };
 
+    /**
+     * 常见的关闭
+     * @param closeable
+     */
     public static void close(Closeable closeable) {
         if (null != closeable) {
             try {
@@ -53,17 +58,6 @@ public class CommonUtils {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("sha-1 加密错误", e);
         }
-    }
-
-    /**
-     * 返回十六进制字符串
-     */
-    private static String hex(byte[] arr) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < arr.length; ++i) {
-            sb.append(Integer.toHexString((arr[i] & 0xFF) | 0x100).substring(1, 3));
-        }
-        return sb.toString();
     }
 
     /**
@@ -93,6 +87,19 @@ public class CommonUtils {
     }
 
     /**
+     * 将Json对象转换成Map
+     */
+    public static Map<String, String> jsonToMap(String jsonString) {
+        Map<String, String> result = new HashMap<String, String>();
+        JSONObject jsonObject = JSONObject.fromObject(jsonString);
+        for (Object obj : jsonObject.keySet()) {
+            String key = obj.toString();
+            result.put(key, jsonObject.getString(key));
+        }
+        return result;
+    }
+
+    /**
      * 向指定URL发送GET方法的请求(这里只使用String流文件接收)
      */
     public static String sendGet(String url) throws IOException {
@@ -110,19 +117,22 @@ public class CommonUtils {
         }
     }
 
+    /**
+     * 发送POST请求
+     * @param url 发送请求的URL
+     * @param str 发送的JSON字符串
+     */
     public static void sendPost(String url, String str) throws ClientProtocolException, IOException {
         CloseableHttpClient httpclient = null;
         try {
             httpclient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(url);
-            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-            nvps.add(new BasicNameValuePair("username", "vip"));
-            nvps.add(new BasicNameValuePair("password", "secret"));
-            httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+            StringEntity entity = new StringEntity(str);
+            httpPost.setEntity(entity);
             CloseableHttpResponse httpResponse = httpclient.execute(httpPost);
             logger.info(httpResponse.getStatusLine());
             HttpEntity httpEntity = httpResponse.getEntity();
-            System.out.println(EntityUtils.toString(httpEntity));
+            logger.info(EntityUtils.toString(httpEntity));
             EntityUtils.consume(httpEntity);
         } finally {
             close(httpclient);
@@ -146,6 +156,9 @@ public class CommonUtils {
         return new String(c);
     }
 
+    /**
+     * 字符串转码
+     */
     public static String StringConver(String str, String oldCharsetName, String newCharsetName) {
         try {
             return new String(str.getBytes(oldCharsetName), newCharsetName);
@@ -174,15 +187,13 @@ public class CommonUtils {
     }
 
     /**
-     * 将Json对象转换成Map
+     * 返回十六进制字符串
      */
-    public static Map<String, String> toMap(String jsonString) {
-        Map<String, String> result = new HashMap<String, String>();
-        JSONObject jsonObject = JSONObject.fromObject(jsonString);
-        for (Object obj : jsonObject.keySet()) {
-            String key = obj.toString();
-            result.put(key, jsonObject.getString(key));
+    private static String hex(byte[] arr) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < arr.length; ++i) {
+            sb.append(Integer.toHexString((arr[i] & 0xFF) | 0x100).substring(1, 3));
         }
-        return result;
+        return sb.toString();
     }
 }
