@@ -15,6 +15,8 @@ import com.henglu.weixin.servlet.StartServlet;
 
 /**
  * 验证请求是否来自微信服务器(页面接口测试时此类会验证不通过)
+ * @author zhouxianglh@gmail.com
+ * @version 1.0  2014-1-20 下午10:20:32
  */
 public class ValidateInterceptor implements Interceptor {
     private static Logger logger = Logger.getLogger(StartServlet.class);

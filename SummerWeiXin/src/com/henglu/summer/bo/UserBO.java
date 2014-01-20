@@ -2,6 +2,8 @@ package com.henglu.summer.bo;
 
 /**
  * 根据客服接口获取的用户信息
+ * @author zhouxianglh@gmail.com
+ * @version 1.0  2014-1-20 下午10:20:32
  */
 public class UserBO extends BaseBO {
     private static final long serialVersionUID = 292914876240375848L;

@@ -19,6 +19,8 @@ import com.henglu.summer.utils.CommonWeixinUtils;
 
 /**
  * 对xml文件进行解析操作封装成Bean和反向操作.完成对象封装和请求的回复
+ * @author zhouxianglh@gmail.com
+ * @version 1.0  2014-1-20 下午10:20:32
  */
 public class BeanInterceptors implements Interceptor {
     private static Logger logger = Logger.getLogger(BeanInterceptors.class);

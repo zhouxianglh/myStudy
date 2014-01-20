@@ -2,6 +2,8 @@ package com.henglu.summer.bo;
 
 /**
  * 客服接口消息,暂时只支持文字消息
+ * @author zhouxianglh@gmail.com
+ * @version 1.0  2014-1-20 下午10:20:32
  */
 public class ServerMessageBO extends BaseBO {
     public class TextBO {

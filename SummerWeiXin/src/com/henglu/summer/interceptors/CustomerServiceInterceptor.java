@@ -14,6 +14,8 @@ import com.henglu.summer.interceptors.interfaces.Interceptor;
 
 /**
  * 客服接口拦截器(用于人工客服)
+ * @author zhouxianglh@gmail.com
+ * @version 1.0  2014-1-20 下午10:20:32
  */
 public class CustomerServiceInterceptor implements Interceptor {
     private static Logger logger = Logger.getLogger(CustomerServiceInterceptor.class);

@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * 控制器,用于处理微信过来的请求
+ * @author zhouxianglh@gmail.com
+ * @version 1.0  2014-1-20 下午10:20:32
  */
 public interface IControl {
     /**

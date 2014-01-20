@@ -19,6 +19,8 @@ import com.henglu.summer.utils.CommonWeixinUtils;
 
 /**
  * Spark做人工客服客户端的人工客服中心
+ * @author zhouxianglh@gmail.com
+ * @version 1.0  2014-1-20 下午10:20:32
  */
 public class SparkServiceCenter implements IServiceCenter, IMessageToSpakHandle {
     private static Logger logger = Logger.getLogger(SparkServiceCenter.class);

@@ -17,6 +17,8 @@ import com.henglu.summer.utils.CommonWeixinUtils;
 
 /**
  * 使用微信作为客服客户端(1对1 模式人工客服中心,我自己觉得Spark做客户端更好,比网页版微信好多了)
+ * @author zhouxianglh@gmail.com
+ * @version 1.0  2014-1-20 下午10:20:32
  */
 public class WeiXinServiceCenter implements IServiceCenter {
     private static Logger logger = Logger.getLogger(WeiXinServiceCenter.class);

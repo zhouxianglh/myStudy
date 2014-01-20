@@ -11,6 +11,8 @@ import com.henglu.summer.utils.CommonWeixinUtils;
 
 /**
  * 这里是做演示使用,如果要用,必需重写
+ * @author zhouxianglh@gmail.com
+ * @version 1.0  2014-1-20 下午10:20:32
  */
 public class SummerControl extends BaseControl {
     private static Logger logger = Logger.getLogger(SummerControl.class);

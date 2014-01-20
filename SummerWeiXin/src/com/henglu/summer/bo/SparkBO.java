@@ -5,6 +5,8 @@ import org.jivesoftware.smack.Connection;
 
 /**
  * Spark 对象,用于存入一个Spark对话对象
+ * @author zhouxianglh@gmail.com
+ * @version 1.0  2014-1-20 下午10:20:32
  */
 public class SparkBO extends BaseBO {
     private static final long serialVersionUID = 6113212184391147220L;

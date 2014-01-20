@@ -4,6 +4,8 @@ import java.util.Date;
 
 /**
  * 微信客服对象(线程安全)
+ * @author zhouxianglh@gmail.com
+ * @version 1.0  2014-1-20 下午10:20:32
  */
 public class ServerBO extends BaseBO {
     private static final long serialVersionUID = -6978409234359906633L;

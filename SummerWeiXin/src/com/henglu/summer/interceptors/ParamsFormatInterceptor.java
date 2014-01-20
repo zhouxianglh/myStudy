@@ -12,6 +12,8 @@ import com.henglu.summer.utils.CommonUtils;
 
 /**
  * 对请求参数进行格式化的拦截器(全角转半角,中文符号转英文符号)
+ * @author zhouxianglh@gmail.com
+ * @version 1.0  2014-1-20 下午10:20:32
  */
 public class ParamsFormatInterceptor implements Interceptor {
     private IControl control;
