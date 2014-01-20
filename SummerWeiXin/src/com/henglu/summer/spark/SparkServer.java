@@ -83,7 +83,7 @@ public class SparkServer implements IMessageToSpark {
             adminSparkBO.setUserName("admin");
             // 获取当前在线客服信息
             Roster roster = adminSparkBO.getConn().getRoster();
-            Thread.sleep(1000);
+            Thread.sleep(1000);// 这里要暂停下,不然可能因为延迟原因无法获取当前在线好友
             Collection<RosterEntry> collection = roster.getEntries();
             for (RosterEntry rosterEntry : collection) {// 获取状态为在线的好友
                 Presence presence = roster.getPresence(rosterEntry.getUser());
