@@ -64,7 +64,9 @@ public class SparkServer implements IMessageToSpark {
             try {
                 sparkBO.getChat().sendMessage("用户主动断开了连接");
                 sparkBO.getConn().disconnect();
-                serverMap.put(sparkBO.getServer(), serverMap.get(sparkBO.getServer()) - 1);
+                if (null != serverMap.get(sparkBO.getServer())) {
+                    serverMap.put(sparkBO.getServer(), serverMap.get(sparkBO.getServer()) - 1);
+                }
             } catch (XMPPException e) {
                 logger.error("用户断开出错", e);
             }

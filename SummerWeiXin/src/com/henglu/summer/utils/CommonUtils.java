@@ -164,7 +164,7 @@ public class CommonUtils {
             return new String(str.getBytes(oldCharsetName), newCharsetName);
         } catch (UnsupportedEncodingException e) {
             logger.error("字符转换出错", e);
-            return "";
+            throw new RuntimeException("字符转换出错");
         }
     }
 
